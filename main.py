@@ -34,13 +34,13 @@ def get_director(nombeDirector: str):
 @app.get("/recomendacion")
 def recomendacion(titulo):
     vectorizador = TfidfVectorizer()
-    dataVectorizada = vectorizador.fit_transform(data['overview'].head(1000))
+    dataVectorizada = vectorizador.fit_transform(data['title'].head(1000))
     
     caract = np.column_stack([dataVectorizada.toarray()])
     
     similares = cosine_similarity(caract)
     
-    indicesPelis = data[data['overview'] == titulo].index[0]
+    indicesPelis = data[data['title'] == titulo].index[0]
     
     tituloSimilares = similares[indicesPelis]
     
