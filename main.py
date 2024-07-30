@@ -1,10 +1,9 @@
 from fastapi import FastAPI
-import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-data = pd.read_parquet("./data/dataset_movies.parquet")
+peliculas = pd.read_parquet("./data/dataset_movies.parquet")
 app = FastAPI()
 
 @app.get("/mes")
@@ -31,21 +30,23 @@ def get_actor(nombreActor: str):
 def get_director(nombeDirector: str):
     return f"{nombeDirector}"
 
+vectorizer = TfidfVectorizer(stop_words='english')
+overviews_tokenizados = vectorizer.fit_transform(peliculas['overview'])
+
 @app.get("/recomendacion")
-def recomendacion(titulo):
-    vectorizador = TfidfVectorizer()
-    dataVectorizada = vectorizador.fit_transform(data['title'].head(1000))
+def recomendacion(titulo: str):
+    pelicula = peliculas[peliculas['title'] == titulo]
+    if pelicula.empty:
+        return {"error": "Película no encontrada"}
     
-    caract = np.column_stack([dataVectorizada.toarray()])
+    # Calcular la similitud del coseno con todas las demás peliculas
+    similitudes = cosine_similarity(overviews_tokenizados[peliculas.index == pelicula.index[0]], overviews_tokenizados)
     
-    similares = cosine_similarity(caract)
+    # Obtener las 5 peliculas más similares
+    índices_similares = similitudes[0].argsort()[-6:-1][::-1]  # Ignorar la misma película y ordenar
     
-    indicesPelis = data[data['title'] == titulo].index[0]
-    
-    tituloSimilares = similares[indicesPelis]
-    
-    indicesRecomendaciones = np.argsort(-tituloSimilares)[1:5]
-    
-    recomendaciones = data.iloc[indicesRecomendaciones,'title']
-    return recomendaciones
-    # return f"en base a la pelicula {titulo} te recomendamos que veas estas otras 5 peliculas:"
+    # Retornar los titles de las peliculas más similares
+    return peliculas.iloc[índices_similares]['title'].tolist()
+titulo = 'Toy Story'
+peliculas_similares = recomendacion(titulo)
+print(peliculas_similares)
