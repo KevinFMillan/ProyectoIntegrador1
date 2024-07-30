@@ -9,7 +9,7 @@ app = FastAPI()
 
 @app.get("/mes")
 def cantidad_filmaciones_mes(mes: str):
-    return f"x cantidad de peliculas fueron estrenadas en el mes de {mes}"
+    return f"x cantidad de peliculas fueron estrenadas en el mes de {mes} realrmente se camibo?"
 
 @app.get("/dia")
 def cantidad_filmaciones_dia(dia: str):
@@ -34,7 +34,18 @@ def get_director(nombeDirector: str):
 @app.get("/recomendacion")
 def recomendacion(titulo):
     vectorizador = TfidfVectorizer()
-    dataVectorizada = vectorizador.fit_transform(data['overview'])
+    dataVectorizada = vectorizador.fit_transform(data['overview'].head(10000))
     
-    carac = np.column_stack([dataVectorizada.toarray()])
-    return f"en base a la pelicula {titulo} te recomendamos que veas estas otras 5 peliculas:"
+    caract = np.column_stack([dataVectorizada.toarray()])
+    
+    similares = cosine_similarity(caract)
+    
+    indicesPelis = data[data["overview"] == titulo].index[0]
+    
+    tituloSimilares = similares[indicesPelis]
+    
+    indicesRecomendaciones = np.argsort(-tituloSimilares)[1:5]
+    
+    recomendaciones = data.iloc[indicesRecomendaciones,'title']
+    return recomendaciones
+    # return f"en base a la pelicula {titulo} te recomendamos que veas estas otras 5 peliculas:"
