@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-data = pd.read_parquet("../data/dataset_movies.parquet")
+data = pd.read_parquet("./data/dataset_movies.parquet")
 app = FastAPI()
 
 @app.get("/mes")
