@@ -16,11 +16,22 @@ def cantidad_filmaciones_dia(dia: str):
 
 @app.get("/score")
 def score_titulo(titulo_de_la_filmacion: str):
-    return f"la pelicula {titulo_de_la_filmacion} fue estrenada en el anio xxxx con un score/popularidad de xxxx"
+    row = peliculas[peliculas['title'] == titulo_de_la_filmacion]
+    if row.empty:
+        return {"error": "Película no encontrada"}
+    year = row['release_year'].values[0]
+    score = row['popularity'].values[0]
+    return f"la pelicula {titulo_de_la_filmacion} fue estrenada en el anio {year} con un score/popularidad de {round(score,2)} puntos"
 
 @app.get("/votos")
 def votos_titulo(titulo_de_la_filmacion: str):
-    return f"la pelicula {titulo_de_la_filmacion} fue estrenada en el anio xxxx. La misma cuenta con un total de xxxx valoraciones, con un promedio de xxxx"
+    row = peliculas[peliculas['title'] == titulo_de_la_filmacion]
+    if row.empty:
+        return {"error": "Película no encontrada"}
+    year = row['release_year'].values[0]
+    votos = row['vote_count'].values[0]
+    average = row['vote_average'].values[0]
+    return f"la pelicula {titulo_de_la_filmacion} fue estrenada en el anio {year}. La misma cuenta con un total de {int(votos)} valoraciones, con un promedio de {round(average,2)}"
 
 @app.get("/actor")
 def get_actor(nombreActor: str):
@@ -31,7 +42,7 @@ def get_director(nombeDirector: str):
     return f"{nombeDirector}"
 
 vectorizer = TfidfVectorizer(stop_words='english')
-overviews_tokenizados = vectorizer.fit_transform(peliculas['overview'])
+overviews_tokenizados = vectorizer.fit_transform(peliculas['overview']) #revisar si tengo que recortar el size del dataset
 
 @app.get("/recomendacion")
 def recomendacion(titulo: str):
@@ -47,6 +58,4 @@ def recomendacion(titulo: str):
     
     # Retornar los titles de las peliculas más similares
     return peliculas.iloc[índices_similares]['title'].tolist()
-titulo = 'Toy Story'
-peliculas_similares = recomendacion(titulo)
-print(peliculas_similares)
+
