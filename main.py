@@ -34,7 +34,7 @@ def get_director(nombeDirector: str):
 @app.get("/recomendacion")
 def recomendacion(titulo):
     vectorizador = TfidfVectorizer()
-    dataVectorizada = vectorizador.fit_transform(data['overview'].head(10000))
+    dataVectorizada = vectorizador.fit_transform(data['overview'].head(5000))
     
     caract = np.column_stack([dataVectorizada.toarray()])
     
