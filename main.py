@@ -8,11 +8,19 @@ app = FastAPI()
 
 @app.get("/mes")
 def cantidad_filmaciones_mes(mes: str):
-    return f"x cantidad de peliculas fueron estrenadas en el mes de {mes}"
+    meses = {
+    'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4,
+    'mayo': 5, 'junio': 6, 'julio': 7, 'agosto': 8,
+    'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+    }
+    numMes = meses[mes.lower()]
+    cant = peliculas[peliculas['release_date'].dt.month == numMes]
+    return f"{len(cant)} cantidad de peliculas fueron estrenadas en el mes de {mes}"
 
-@app.get("/dia")
-def cantidad_filmaciones_dia(dia: str):
-    return f"x cantidad de peliculas fueron estrenadas en los dias {dia}"
+# @app.get("/dia")
+# def cantidad_filmaciones_dia(dia: str):
+#     cant = 9
+#     return f"{cant} cantidad de peliculas fueron estrenadas en los dias {dia}"
 
 @app.get("/score")
 def score_titulo(titulo_de_la_filmacion: str):
@@ -36,13 +44,13 @@ def votos_titulo(titulo_de_la_filmacion: str):
     else:
         return f"la pelicula {titulo_de_la_filmacion} no cuenta con al menos 2000 valoraciones"
 
-@app.get("/actor")
-def get_actor(nombreActor: str):
-    return f"El actor {nombreActor} ha participado de xxxx cantidad de filmaciones, el mismo ha conseguido un retorno de xxxx con un promedio de xxxx por filmacion"
+# @app.get("/actor")
+# def get_actor(nombreActor: str):
+#     return f"El actor {nombreActor} ha participado de xxxx cantidad de filmaciones, el mismo ha conseguido un retorno de xxxx con un promedio de xxxx por filmacion"
 
-@app.get("/director")
-def get_director(nombeDirector: str):
-    return f"{nombeDirector}"
+# @app.get("/director")
+# def get_director(nombeDirector: str):
+#     return f"{nombeDirector}"
 
 vectorizer = TfidfVectorizer(stop_words='english')
 overviews_tokenizados = vectorizer.fit_transform(peliculas['overview']) #revisar si tengo que recortar el size del dataset
@@ -51,12 +59,7 @@ def recomendacion(titulo: str):
     pelicula = peliculas[peliculas['title'] == titulo]
     if pelicula.empty:
         return {"error": "Película no encontrada"}
-    
-    # Calcular la similitud del coseno con todas las demás peliculas
     similitudes = cosine_similarity(overviews_tokenizados[peliculas.index == pelicula.index[0]], overviews_tokenizados)
-    
-    # Obtener las 5 peliculas más similares
-    índices_similares = similitudes[0].argsort()[-6:-1][::-1]  # Ignorar la misma película y ordenar
-    
-    # Retornar los titles de las peliculas más similares
-    return peliculas.iloc[índices_similares]['title'].tolist()
+    #Se obtienen las 5 peliculas mas similares 
+    similares = similitudes[0].argsort()[-6:-1][::-1] 
+    return peliculas.iloc[similares]['title'].tolist()
