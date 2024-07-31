@@ -17,10 +17,14 @@ def cantidad_filmaciones_mes(mes: str):
     cant = peliculas[peliculas['release_date'].dt.month == numMes]
     return f"{len(cant)} cantidad de peliculas fueron estrenadas en el mes de {mes}"
 
-# @app.get("/dia")
-# def cantidad_filmaciones_dia(dia: str):
-#     cant = 9
-#     return f"{cant} cantidad de peliculas fueron estrenadas en los dias {dia}"
+@app.get("/dia")
+def cantidad_filmaciones_dia(dia: str):
+    dias = {
+    'lunes': 0, 'martes': 1, 'miercoles': 2, 'jueves': 3, 'viernes': 4, 'sabado': 5, 'domingo': 6
+    }
+    numDia = dias[dia.lower()]
+    cant = peliculas[peliculas['release_date'].dt.weekday == numDia]
+    return f"{len(cant)} cantidad de peliculas fueron estrenadas en los dias {dia}"
 
 @app.get("/score")
 def score_titulo(titulo_de_la_filmacion: str):
